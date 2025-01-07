@@ -1,5 +1,5 @@
 #importação
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -20,11 +20,32 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=True)
 
 
-#definir uma rota raiz (pagina inicial) e a função 
-#que será executada ao requisitar 
-@app.route('/teste')
+
+@app.route('/api/products/add', methods=["POST"])
+def add_product():
+    data = request.json
+
+    product = Product(
+        name=data.get("name"),
+        price=data.get("price"),
+        description=data.get("description")
+    )
+
+    #adicionar ao banco de dados
+    db.session.add(product)
+    db.session.commit()
+
+    return "Produto cadastrado com sucesso"
+
+#definir uma rota raiz (pagina inicial) e a função
+#que será executada ao requisitar
+@app.route('/')
 def nova_funcao():
     return 'Teste de API'
 
 if __name__ == "__main__":
+    # cria as tabelas no banco de dados se ainda nao existirem
+    with app.app_context():
+        db.create_all()
+
     app.run(debug=True)
